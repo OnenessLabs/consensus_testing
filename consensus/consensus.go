@@ -163,3 +163,11 @@ type PoSA interface {
 type StateReader interface {
 	GetState(addr common.Address, hash common.Hash) common.Hash
 }
+
+// PoComposite is a consensus engine of composite two consensus engines.
+type PoComposite interface {
+	Engine
+
+	// getEngine returns the current mining consensus engine.
+	getEngine(number uint64) Engine
+}

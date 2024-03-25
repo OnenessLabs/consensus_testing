@@ -20,6 +20,8 @@ package eth
 import (
 	"errors"
 	"fmt"
+	"github.com/ethereum/go-ethereum/consensus/composite"
+	"github.com/ethereum/go-ethereum/consensus/myclique"
 	"math/big"
 	"runtime"
 	"sync"
@@ -543,6 +545,19 @@ func (s *Ethereum) StartMining(threads int) error {
 				return fmt.Errorf("signer missing: %v", err)
 			}
 			congress.Authorize(eb, wallet.SignData, wallet.SignTx)
+		}
+		if composite, ok := s.engine.(*composite.Composite); ok {
+			wallet, err := s.accountManager.Find(accounts.Account{Address: eb})
+			if wallet == nil || err != nil {
+				log.Error("Etherbase account unavailable locally", "err", err)
+				return fmt.Errorf("signer missing: %v", err)
+			}
+			if clique, ok := composite.PoCliqueEngine.(*clique.Clique); ok {
+				clique.Authorize(eb, wallet.SignData)
+			}
+			if clique, ok := composite.MyPoCliqueEngine.(*myclique.MyClique); ok {
+				clique.Authorize(eb, wallet.SignData)
+			}
 		}
 		// If mining is started, we can disable the transaction rejection mechanism
 		// introduced to speed sync times.

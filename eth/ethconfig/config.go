@@ -18,6 +18,8 @@
 package ethconfig
 
 import (
+	"github.com/ethereum/go-ethereum/consensus/composite"
+	"github.com/ethereum/go-ethereum/consensus/myclique"
 	"math/big"
 	"os"
 	"os/user"
@@ -233,6 +235,13 @@ func CreateConsensusEngine(stack *node.Node, chainConfig *params.ChainConfig, co
 	// If proof-of-stake-authority is requested, set it up
 	if chainConfig.Congress != nil {
 		return congress.New(chainConfig, db)
+	}
+	if chainConfig.Composite != nil {
+		return composite.New(chainConfig, db)
+	}
+
+	if chainConfig.MyClique != nil {
+		return myclique.New(chainConfig.MyClique, db)
 	}
 	// Otherwise assume proof-of-work
 	switch config.PowMode {
